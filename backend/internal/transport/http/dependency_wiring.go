@@ -13,6 +13,7 @@ import (
 type dependencies struct {
 	db           *sql.DB
 	registerUser *usecase.RegisterUser
+	loginUser    *usecase.LoginUser
 }
 
 func buildDependencies(cfg config.Config) (*dependencies, error) {
@@ -23,11 +24,16 @@ func buildDependencies(cfg config.Config) (*dependencies, error) {
 
 	users := postgres.NewUserRepository(db)
 	roles := postgres.NewRoleRepository(db)
+	refreshTokens := postgres.NewRefreshTokenRepository(db)
+	audit := postgres.NewAuditRepository(db)
+
 	hasher := security.NewBcryptHasher(0)
+	tokens := security.NewJWTTokenService(cfg.TokenSecret, cfg.TokenTTL)
 
 	return &dependencies{
 		db:           db,
 		registerUser: usecase.NewRegisterUser(users, roles, hasher),
+		loginUser:    usecase.NewLoginUser(users, refreshTokens, audit, hasher, tokens),
 	}, nil
 }
 

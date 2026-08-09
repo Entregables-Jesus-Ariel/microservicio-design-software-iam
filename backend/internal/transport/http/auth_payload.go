@@ -15,3 +15,16 @@ type userResponse struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 }
+
+// loginRequest is the JSON body for POST /api/auth/login.
+type loginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// loginResponse is what we return after a successful login.
+type loginResponse struct {
+	AccessToken  string       `json:"accessToken"`
+	RefreshToken string       `json:"refreshToken"`
+	User         userResponse `json:"user"`
+}
