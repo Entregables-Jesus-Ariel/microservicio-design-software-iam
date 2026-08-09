@@ -3,11 +3,13 @@ package port
 import (
 	"context"
 
-	"ferreteria/internal/domain"
+	"iam/internal/domain"
 )
 
-// UserRepository queries user accounts for authentication and audit.
+// UserRepository is the persistence contract the application layer needs
+// for identity.user. Implementations live in internal/persistence.
 type UserRepository interface {
-	FindByUsername(ctx context.Context, username string) (*domain.User, error)
-	FindByID(ctx context.Context, id int64) (*domain.User, error)
+	ExistsByEmail(ctx context.Context, email string) (bool, error)
+	Create(ctx context.Context, user domain.User) (domain.User, error)
+	FindByEmail(ctx context.Context, email string) (domain.User, error)
 }
