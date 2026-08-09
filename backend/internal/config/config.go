@@ -17,6 +17,7 @@ type Config struct {
 	DatabaseName     string
 	DatabaseUser     string
 	DatabasePassword string
+	DatabaseSSLMode  string
 	TokenSecret      string
 	TokenTTL         time.Duration
 	HTTPPort         int
@@ -28,19 +29,19 @@ type Config struct {
 
 // Load reads configuration from the environment and validates it.
 func Load() (Config, error) {
-	host, err := requiredEnv("MYSQL_HOST")
+	host, err := requiredEnv("POSTGRES_HOST")
 	if err != nil {
 		return Config{}, err
 	}
-	name, err := requiredEnv("MYSQL_DB")
+	name, err := requiredEnv("POSTGRES_DB")
 	if err != nil {
 		return Config{}, err
 	}
-	user, err := requiredEnv("MYSQL_USER")
+	user, err := requiredEnv("POSTGRES_USER")
 	if err != nil {
 		return Config{}, err
 	}
-	password, err := requiredEnv("MYSQL_PASSWORD")
+	password, err := requiredEnv("POSTGRES_PASSWORD")
 	if err != nil {
 		return Config{}, err
 	}
@@ -51,21 +52,29 @@ func Load() (Config, error) {
 
 	return Config{
 		DatabaseHost:     host,
-		DatabasePort:     intEnv("MYSQL_PORT", 3306),
+		DatabasePort:     intEnv("POSTGRES_PORT", 5432),
 		DatabaseName:     name,
 		DatabaseUser:     user,
 		DatabasePassword: password,
+		DatabaseSSLMode:  stringEnv("POSTGRES_SSLMODE", "disable"),
 		TokenSecret:      secret,
 		TokenTTL:         time.Duration(intEnv("APP_TOKEN_TTL_MINUTES", 15)) * time.Minute,
-		HTTPPort:         intEnv("APP_HTTP_PORT", 8080),
-		CORSOrigin:       stringEnv("APP_CORS_ORIGIN", "http://localhost:4200"),
+		HTTPPort:         intEnv("APP_HTTP_PORT", 8081),
+		CORSOrigin:       stringEnv("APP_CORS_ORIGIN", "http://localhost:5173"),
 		ReadTimeout:      time.Duration(intEnv("APP_READ_TIMEOUT_SECONDS", 10)) * time.Second,
 		WriteTimeout:     time.Duration(intEnv("APP_WRITE_TIMEOUT_SECONDS", 30)) * time.Second,
 		QueryTimeout:     time.Duration(intEnv("APP_DB_QUERY_TIMEOUT_SECONDS", 5)) * time.Second,
 	}, nil
 }
 
-// requiredEnv fails when a secret-bearing variable is absent or empty.
+// ConnString builds the Postgres DSN used by the pgx driver.
+func (c Config) ConnString() string {
+	return fmt.Sprintf(
+		"host=%s port=%d dbname=%s user=%s password=%s sslmode=%s",
+		c.DatabaseHost, c.DatabasePort, c.DatabaseName, c.DatabaseUser, c.DatabasePassword, c.DatabaseSSLMode,
+	)
+}
+
 func requiredEnv(name string) (string, error) {
 	value := os.Getenv(name)
 	if value == "" {
