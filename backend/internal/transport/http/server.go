@@ -6,37 +6,31 @@ import (
 	"fmt"
 	"net/http"
 
-	"ferreteria/internal/config"
+	"iam/internal/config"
 )
 
-// idleTimeoutFactor derives the idle timeout from the write timeout so a
-// slow client cannot hold a connection open indefinitely.
 const idleTimeoutFactor = 4
 
 // Run wires dependencies and serves until the process is stopped.
-func Run(settings config.Config) error {
-	dependencies, err := buildDependencies(settings)
+func Run(cfg config.Config) error {
+	deps, err := buildDependencies(cfg)
 	if err != nil {
 		return err
 	}
-	defer dependencies.Close()
+	defer deps.Close()
 
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", settings.HTTPPort),
-		Handler:      newHandler(settings, dependencies),
-		ReadTimeout:  settings.ReadTimeout,
-		WriteTimeout: settings.WriteTimeout,
-		IdleTimeout:  settings.WriteTimeout * idleTimeoutFactor,
+		Addr:         fmt.Sprintf(":%d", cfg.HTTPPort),
+		Handler:      newHandler(cfg, deps),
+		ReadTimeout:  cfg.ReadTimeout,
+		WriteTimeout: cfg.WriteTimeout,
+		IdleTimeout:  cfg.WriteTimeout * idleTimeoutFactor,
 	}
 	return server.ListenAndServe()
 }
 
-// newHandler assembles the route table and the middleware chain.
-func newHandler(settings config.Config, dependencies *dependencies) http.Handler {
+func newHandler(cfg config.Config, deps *dependencies) http.Handler {
 	mux := http.NewServeMux()
-	registerAuthRoutes(mux, dependencies)
-	registerMovementRoutes(mux, settings, dependencies)
-	registerCategoryRoutes(mux, settings, dependencies)
-	registerSummaryRoutes(mux, settings, dependencies)
-	return withCORS(settings, withRecovery(mux))
+	registerAuthRoutes(mux, deps)
+	return withCORS(cfg, withRecovery(mux))
 }

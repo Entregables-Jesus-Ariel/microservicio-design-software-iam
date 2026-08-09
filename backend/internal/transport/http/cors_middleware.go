@@ -3,31 +3,30 @@ package http
 import (
 	"net/http"
 
-	"ferreteria/internal/config"
+	"iam/internal/config"
 )
 
-// withCORS allows exactly the configured origin. A wildcard would let any
-// site call the API with the admin's browser credentials.
-func withCORS(settings config.Config, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		origin := request.Header.Get("Origin")
-		if origin != "" && origin == settings.CORSOrigin {
-			header := writer.Header()
-			header.Set("Access-Control-Allow-Origin", settings.CORSOrigin)
-			header.Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
-			header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			header.Set("Vary", "Origin")
-		}
+func withCORS(cfg config.Config, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", cfg.CORSOrigin)
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-		if request.Method == http.MethodOptions {
-			if origin != settings.CORSOrigin {
-				writer.WriteHeader(http.StatusForbidden)
-				return
-			}
-			writer.WriteHeader(http.StatusNoContent)
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
 			return
 		}
+		next.ServeHTTP(w, r)
+	})
+}
 
-		next.ServeHTTP(writer, request)
+func withRecovery(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if rec := recover(); rec != nil {
+				writeError(w, http.StatusInternalServerError, "internal server error")
+			}
+		}()
+		next.ServeHTTP(w, r)
 	})
 }
