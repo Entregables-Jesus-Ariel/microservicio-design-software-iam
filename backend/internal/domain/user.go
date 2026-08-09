@@ -1,47 +1,31 @@
+// Package domain contains the IAM business entities. No layer below this
+// one (persistence, transport) may be imported here.
 package domain
 
-import (
-	"strings"
-	"time"
+import "time"
+
+// ActorType mirrors the identity.user.actor_type CHECK constraint.
+type ActorType string
+
+const (
+	ActorTypeUser       ActorType = "USER"
+	ActorTypeInstructor ActorType = "INSTRUCTOR"
+	ActorTypeLearner    ActorType = "LEARNER"
 )
 
-// RoleAdmin is the only role supported by the current scope.
-const RoleAdmin = "admin"
-
-// User is an account allowed to record and review movements.
+// User represents a row in identity.user.
 type User struct {
-	ID           int64
-	Username     string
-	PasswordHash string
-	Role         string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-}
-
-// NewUser validates and builds a user account. The password hash is
-// produced outside the domain so no hashing library leaks into it.
-func NewUser(username string, passwordHash string, role string) (*User, error) {
-	trimmedUsername := strings.TrimSpace(username)
-	if trimmedUsername == "" {
-		return nil, ErrUsernameRequired
-	}
-	if strings.TrimSpace(passwordHash) == "" {
-		return nil, ErrPasswordHashRequired
-	}
-	if role != RoleAdmin {
-		return nil, ErrInvalidRole
-	}
-	now := time.Now().UTC()
-	return &User{
-		Username:     trimmedUsername,
-		PasswordHash: passwordHash,
-		Role:         role,
-		CreatedAt:    now,
-		UpdatedAt:    now,
-	}, nil
-}
-
-// IsAdmin reports whether the user holds administrative rights.
-func (u *User) IsAdmin() bool {
-	return u.Role == RoleAdmin
+	ID             string
+	Email          string
+	PasswordHash   string
+	FirstName      string
+	LastName       string
+	ActorType      ActorType
+	ActorID        *string
+	IsActive       bool
+	LastLoginAt    *time.Time
+	FailedAttempts int16
+	LockedUntil    *time.Time
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }

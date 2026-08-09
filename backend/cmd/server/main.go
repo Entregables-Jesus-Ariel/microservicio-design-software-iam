@@ -5,17 +5,18 @@ package main
 import (
 	"log"
 
-	"ferreteria/internal/config"
-	transporthttp "ferreteria/internal/transport/http"
+	"iam/internal/config"
+	transporthttp "iam/internal/transport/http"
 )
 
 func main() {
-	settings, err := config.Load()
+	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("configuration error: %v", err)
 	}
 
-	if err := transporthttp.Run(settings); err != nil {
+	log.Printf("IAM backend listening on port %d", cfg.HTTPPort)
+	if err := transporthttp.Run(cfg); err != nil {
 		log.Fatalf("server stopped: %v", err)
 	}
 }

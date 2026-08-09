@@ -3,26 +3,45 @@ package http
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
+
+	"iam/internal/application/usecase"
 )
 
-// handleLogin authenticates the admin and returns an access token.
-func handleLogin(dependencies *dependencies) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		var payload loginRequest
-		if err := json.NewDecoder(request.Body).Decode(&payload); err != nil {
-			writeError(writer, http.StatusBadRequest, "request body is not valid JSON")
+// handleRegister creates a new user account with the default role.
+func handleRegister(deps *dependencies) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var payload registerRequest
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			writeError(w, http.StatusBadRequest, "request body is not valid JSON")
 			return
 		}
 
-		token, err := dependencies.authenticateUser.Execute(
-			request.Context(),
-			payload.Username,
-			payload.Password,
-		)
-		if err != nil {
-			writeDomainError(writer, request, err)
+		if strings.TrimSpace(payload.Email) == "" || len(payload.Password) < 8 {
+			writeError(w, http.StatusBadRequest, "email is required and password must have at least 8 characters")
 			return
 		}
-		writeJSON(writer, http.StatusOK, tokenResponse{Token: token})
+
+		user, err := deps.registerUser.Execute(r.Context(), registerInput(payload))
+		if err != nil {
+			writeDomainError(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusCreated, userResponse{
+			ID:        user.ID,
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+		})
+	}
+}
+
+func registerInput(p registerRequest) usecase.RegisterUserInput {
+	return usecase.RegisterUserInput{
+		Email:     p.Email,
+		Password:  p.Password,
+		FirstName: p.FirstName,
+		LastName:  p.LastName,
 	}
 }
