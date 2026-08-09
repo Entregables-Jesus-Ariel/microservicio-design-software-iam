@@ -1,0 +1,120 @@
+{
+  "requirements": [
+    {
+      "requirement": "id: FR-001 | title: Record Income | description: The system shall allow the admin to register an income entry with date, category, amount, and optional note.",
+      "operations": ["POST /api/movements"],
+      "implementation_files": [
+        "backend/internal/transport/http/movement_route.go",
+        "backend/internal/application/usecase/record_movement.go",
+        "backend/internal/persistence/postgres/movement_repository.go"
+      ],
+      "test_files": [
+        "backend/internal/application/usecase/record_movement_test.go",
+        "backend/internal/application/usecase/movement_crud_test.go"
+      ]
+    },
+    {
+      "requirement": "id: FR-002 | title: Record Expense | description: The system shall allow the admin to register an expense entry with date, category, amount, and optional note.",
+      "operations": ["POST /api/movements"],
+      "implementation_files": [
+        "backend/internal/transport/http/movement_route.go",
+        "backend/internal/application/usecase/record_movement.go",
+        "backend/internal/domain/category.go"
+      ],
+      "test_files": [
+        "backend/internal/application/usecase/movement_crud_test.go",
+        "backend/internal/domain/category_test.go"
+      ]
+    },
+    {
+      "requirement": "id: FR-003 | title: Categorize Movements | description: The system shall support predefined income categories (e.g., Sales, Advances, Other) and expense categories (e.g., Purchase of Goods, Operating Expenses, Services, Transport). The admin can add custom categories.",
+      "operations": ["GET /api/categories", "POST /api/categories"],
+      "implementation_files": [
+        "backend/internal/transport/http/category_route.go",
+        "backend/internal/application/usecase/list_category.go",
+        "backend/internal/application/usecase/create_category.go"
+      ],
+      "test_files": [
+        "backend/internal/application/usecase/movement_crud_test.go",
+        "backend/internal/domain/category_test.go"
+      ]
+    },
+    {
+      "requirement": "id: FR-004 | title: View Period Summary | description: The system shall display total income, total expenses, and net balance for a selected day, week, or month.",
+      "operations": ["GET /api/summary"],
+      "implementation_files": [
+        "backend/internal/transport/http/summary_route.go",
+        "backend/internal/application/usecase/get_period_summary.go",
+        "backend/internal/domain/period.go"
+      ],
+      "test_files": [
+        "backend/internal/application/usecase/get_period_summary_test.go",
+        "backend/internal/domain/period_test.go"
+      ]
+    },
+    {
+      "requirement": "id: FR-005 | title: View Movement Detail | description: The system shall list all movements within a selected period with sortable columns (date, category, amount, type, note).",
+      "operations": ["GET /api/movements"],
+      "implementation_files": [
+        "backend/internal/transport/http/movement_route.go",
+        "backend/internal/application/usecase/list_movement.go",
+        "backend/internal/persistence/postgres/movement_repository.go"
+      ],
+      "test_files": [
+        "backend/internal/application/usecase/movement_crud_test.go"
+      ]
+    },
+    {
+      "requirement": "id: FR-006 | title: Edit Movement | description: The admin may edit any movement (date, category, amount, note) after creation; edits are logged.",
+      "operations": ["PUT /api/movements/{id}"],
+      "implementation_files": [
+        "backend/internal/transport/http/movement_route.go",
+        "backend/internal/application/usecase/edit_movement.go",
+        "backend/internal/persistence/postgres/movement_audit_repository.go"
+      ],
+      "test_files": [
+        "backend/internal/application/usecase/movement_crud_test.go",
+        "backend/internal/domain/movement_test.go"
+      ]
+    },
+    {
+      "requirement": "id: FR-007 | title: Cancel/Annull Movement | description: The admin may mark a movement as cancelled (soft delete) which excludes it from summaries while preserving the record.",
+      "operations": ["DELETE /api/movements/{id}"],
+      "implementation_files": [
+        "backend/internal/transport/http/movement_route.go",
+        "backend/internal/application/usecase/cancel_movement.go",
+        "backend/internal/domain/movement.go"
+      ],
+      "test_files": [
+        "backend/internal/application/usecase/cancel_movement_test.go",
+        "backend/internal/application/usecase/movement_crud_test.go"
+      ]
+    },
+    {
+      "requirement": "id: FR-008 | title: User Authentication | description: The system shall require login (username/password) for access; only one admin user initially.",
+      "operations": ["POST /api/auth/login"],
+      "implementation_files": [
+        "backend/internal/transport/http/auth_route.go",
+        "backend/internal/application/usecase/authenticate_user.go",
+        "backend/internal/security/bcrypt_hasher.go"
+      ],
+      "test_files": [
+        "backend/internal/application/usecase/authenticate_user_test.go",
+        "backend/internal/transport/http/auth_handler_test.go"
+      ]
+    },
+    {
+      "requirement": "id: FR-009 | title: Export Summary | description: The system shall allow exporting period summaries and movement lists to CSV and PDF.",
+      "operations": ["GET /api/summary", "GET /api/movements"],
+      "implementation_files": [
+        "backend/internal/transport/http/summary_route.go",
+        "backend/internal/transport/http/movement_route.go"
+      ],
+      "test_files": [
+        "backend/internal/application/usecase/get_period_summary_test.go",
+        "backend/internal/application/usecase/movement_crud_test.go"
+      ],
+      "rationale": "The backend exposes summary and movement data as JSON; CSV and PDF rendering is a frontend concern in this architecture and is delivered by A08."
+    }
+  ]
+}
