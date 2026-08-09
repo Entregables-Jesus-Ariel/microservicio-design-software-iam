@@ -1,6 +1,6 @@
 package port
 
-// PasswordHasher hides the hashing algorithm from the application layer.
+// PasswordHasher hashes and verifies plain-text passwords.
 type PasswordHasher interface {
 	Hash(plain string) (string, error)
 	Verify(hashed string, plain string) bool
