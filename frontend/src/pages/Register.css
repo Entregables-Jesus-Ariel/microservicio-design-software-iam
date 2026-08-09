@@ -1,0 +1,124 @@
+.register-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  padding: 20px;
+  text-align: left;
+}
+
+.register-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 340px;
+  border-radius: 12px;
+  padding: 28px 26px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.register-card h2 {
+  text-align: center;
+  margin: 0 0 20px;
+  color: #111827;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.register-field {
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.register-field label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-align: left;
+}
+
+.register-field input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.register-field input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.password-rules {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  font-size: 11px;
+  text-align: left;
+}
+
+.password-rules li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #9ca3af;
+  margin-bottom: 3px;
+}
+
+.password-rules li.valid {
+  color: #059669;
+}
+
+.password-rules li .icon {
+  font-weight: 700;
+}
+
+.register-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.register-success {
+  background: #d1fae5;
+  color: #047857;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.register-button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.15s ease;
+}
+
+.register-button:hover:not(:disabled) {
+  background: #4f46e5;
+}
+
+.register-button:disabled {
+  background: #c7c9f5;
+  cursor: not-allowed;
+}
