@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { registerUser } from "../services/authService";
 import "./Register.css";
 
@@ -117,6 +118,9 @@ function Register() {
             {loading ? "Registrando..." : "Registrarse"}
           </button>
         </form>
+        <div className="register-footer">
+          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+        </div>
       </div>
     </div>
   );
