@@ -81,3 +81,105 @@ func handleLogin(deps *dependencies) http.HandlerFunc {
 		})
 	}
 }
+
+// handleRefresh issues a new token pair from a valid refresh token.
+func handleRefresh(deps *dependencies) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var payload refreshRequest
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			writeError(w, http.StatusBadRequest, "request body is not valid JSON")
+			return
+		}
+
+		if strings.TrimSpace(payload.RefreshToken) == "" {
+			writeError(w, http.StatusBadRequest, "refresh token is required")
+			return
+		}
+
+		result, err := deps.refreshSession.Execute(r.Context(), usecase.RefreshSessionInput{
+			RefreshToken: payload.RefreshToken,
+		})
+		if err != nil {
+			writeDomainError(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusOK, refreshResponse{
+			AccessToken:  result.AccessToken,
+			RefreshToken: result.RefreshToken,
+		})
+	}
+}
+
+// handleLogout invalidates a refresh token so it can no longer be used.
+func handleLogout(deps *dependencies) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var payload logoutRequest
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			writeError(w, http.StatusBadRequest, "request body is not valid JSON")
+			return
+		}
+
+		if strings.TrimSpace(payload.RefreshToken) != "" {
+			_ = deps.logoutUser.Execute(r.Context(), usecase.LogoutUserInput{
+				RefreshToken: payload.RefreshToken,
+			})
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+// handleForgotPassword requests a password reset token.
+func handleForgotPassword(deps *dependencies) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var payload forgotPasswordRequest
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			writeError(w, http.StatusBadRequest, "request body is not valid JSON")
+			return
+		}
+
+		if strings.TrimSpace(payload.Email) == "" {
+			writeError(w, http.StatusBadRequest, "email is required")
+			return
+		}
+
+		result, err := deps.forgotPassword.Execute(r.Context(), usecase.ForgotPasswordInput{
+			Email: payload.Email,
+		})
+		if err != nil {
+			writeDomainError(w, err)
+			return
+		}
+
+		writeJSON(w, http.StatusOK, forgotPasswordResponse{
+			ResetToken: result.ResetToken,
+		})
+	}
+}
+
+// handleResetPassword sets a new password using a valid reset token.
+func handleResetPassword(deps *dependencies) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var payload resetPasswordRequest
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			writeError(w, http.StatusBadRequest, "request body is not valid JSON")
+			return
+		}
+
+		if strings.TrimSpace(payload.Token) == "" || len(payload.NewPassword) < 8 {
+			writeError(w, http.StatusBadRequest, "valid token and new password (min 8 chars) are required")
+			return
+		}
+
+		if err := deps.resetPassword.Execute(r.Context(), usecase.ResetPasswordInput{
+			Token:       payload.Token,
+			NewPassword: payload.NewPassword,
+		}); err != nil {
+			writeDomainError(w, err)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	}
+}

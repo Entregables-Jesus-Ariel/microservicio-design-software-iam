@@ -32,5 +32,7 @@ func Run(cfg config.Config) error {
 func newHandler(cfg config.Config, deps *dependencies) http.Handler {
 	mux := http.NewServeMux()
 	registerAuthRoutes(mux, deps)
+	registerRBACRoutes(mux, deps, cfg.TokenSecret)
+	registerAuditRoutes(mux, deps, cfg.TokenSecret)
 	return withCORS(cfg, withRecovery(mux))
 }

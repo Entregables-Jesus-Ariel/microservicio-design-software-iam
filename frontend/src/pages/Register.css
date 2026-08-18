@@ -1,13 +1,17 @@
 .register-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f3f4f6;
+  background: #f9fafb;
   font-family: "Segoe UI", system-ui, sans-serif;
   padding: 20px;
   text-align: left;
 }
+
+
+
 
 .register-card {
   background: #ffffff;
@@ -15,8 +19,8 @@
   max-width: 340px;
   border-radius: 12px;
   padding: 28px 26px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: 1.5px solid #16a34a;
   text-align: left;
 }
 
@@ -39,7 +43,6 @@
   font-size: 12px;
   font-weight: 600;
   color: #6b7280;
-  text-align: left;
 }
 
 .register-field input {
@@ -54,8 +57,8 @@
 
 .register-field input:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
 }
 
 .password-rules {
@@ -75,7 +78,7 @@
 }
 
 .password-rules li.valid {
-  color: #059669;
+  color: #16a34a;
 }
 
 .password-rules li .icon {
@@ -92,8 +95,8 @@
 }
 
 .register-success {
-  background: #d1fae5;
-  color: #047857;
+  background: #dcfce7;
+  color: #15803d;
   padding: 8px 10px;
   border-radius: 6px;
   font-size: 12px;
@@ -105,7 +108,7 @@
   padding: 10px;
   border: none;
   border-radius: 6px;
-  background: #6366f1;
+  background: #16a34a;
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -115,11 +118,11 @@
 }
 
 .register-button:hover:not(:disabled) {
-  background: #4f46e5;
+  background: #15803d;
 }
 
 .register-button:disabled {
-  background: #c7c9f5;
+  background: #86d6a4;
   cursor: not-allowed;
 }
 
@@ -131,7 +134,7 @@
 }
 
 .register-footer a {
-  color: #6366f1;
+  color: #16a34a;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;

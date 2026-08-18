@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"time"
 	"errors"
 
 	"iam/internal/domain"
@@ -67,4 +68,99 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (domain.
 		return domain.User{}, err
 	}
 	return user, nil
+}
+
+// FindByID loads a user by ID.
+func (r *UserRepository) FindByID(ctx context.Context, userID string) (domain.User, error) {
+	const query = `
+		SELECT id, email, password_hash, first_name, last_name, actor_type,
+		       is_active, failed_attempts, locked_until, created_at, updated_at
+		FROM identity."user"
+		WHERE id = $1`
+
+	var user domain.User
+	row := r.db.QueryRowContext(ctx, query, userID)
+	err := row.Scan(
+		&user.ID, &user.Email, &user.PasswordHash, &user.FirstName, &user.LastName,
+		&user.ActorType, &user.IsActive, &user.FailedAttempts, &user.LockedUntil,
+		&user.CreatedAt, &user.UpdatedAt,
+	)
+	if errors.Is(err, sql.ErrNoRows) {
+		return domain.User{}, domain.ErrInvalidCredentials
+	}
+	if err != nil {
+		return domain.User{}, err
+	}
+	return user, nil
+}
+
+// RegisterFailedAttempt increments failed_attempts by one and, when the
+// caller decided a lockout applies, sets locked_until in the same statement.
+func (r *UserRepository) RegisterFailedAttempt(ctx context.Context, userID string, lockedUntil *time.Time) error {
+	const query = `
+		UPDATE identity."user"
+		SET failed_attempts = failed_attempts + 1,
+		    locked_until = $2,
+		    updated_at = now()
+		WHERE id = $1`
+
+	_, err := r.db.ExecContext(ctx, query, userID, lockedUntil)
+	return err
+}
+
+// ResetFailedAttempts clears the failure counter and any lock after a
+// successful login.
+func (r *UserRepository) ResetFailedAttempts(ctx context.Context, userID string) error {
+	const query = `
+		UPDATE identity."user"
+		SET failed_attempts = 0,
+		    locked_until = NULL,
+		    updated_at = now()
+		WHERE id = $1`
+
+	_, err := r.db.ExecContext(ctx, query, userID)
+	return err
+}
+
+// UpdatePassword sets a new hash for the user and unlocks them if needed.
+func (r *UserRepository) UpdatePassword(ctx context.Context, userID string, passwordHash string) error {
+	const query = `
+		UPDATE identity."user"
+		SET password_hash = $2,
+		    failed_attempts = 0,
+		    locked_until = NULL,
+		    updated_at = now()
+		WHERE id = $1`
+
+	_, err := r.db.ExecContext(ctx, query, userID, passwordHash)
+	return err
+}
+
+// ListAll returns all users in the system.
+func (r *UserRepository) ListAll(ctx context.Context) ([]domain.User, error) {
+	const query = `
+		SELECT id, email, password_hash, first_name, last_name, actor_type,
+		       is_active, failed_attempts, locked_until, created_at, updated_at
+		FROM identity."user"
+		ORDER BY created_at DESC`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []domain.User
+	for rows.Next() {
+		var user domain.User
+		if err := rows.Scan(
+			&user.ID, &user.Email, &user.PasswordHash, &user.FirstName, &user.LastName,
+			&user.ActorType, &user.IsActive, &user.FailedAttempts, &user.LockedUntil,
+			&user.CreatedAt, &user.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, rows.Err()
 }

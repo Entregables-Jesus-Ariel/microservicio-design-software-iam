@@ -1,6 +1,10 @@
 package port
 
-import "context"
+import (
+	"context"
+
+	"iam/internal/domain"
+)
 
 // LoginOutcome mirrors the identity_audit.audit_login.outcome CHECK constraint.
 type LoginOutcome string
@@ -22,4 +26,5 @@ type LoginAttempt struct {
 // AuditRepository records authentication events.
 type AuditRepository interface {
 	RecordLoginAttempt(ctx context.Context, attempt LoginAttempt) error
+	ListLoginAttempts(ctx context.Context, limit, offset int) ([]domain.LoginAttemptLog, int, error)
 }

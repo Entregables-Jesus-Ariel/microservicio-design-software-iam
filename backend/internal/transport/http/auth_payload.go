@@ -28,3 +28,29 @@ type loginResponse struct {
 	RefreshToken string       `json:"refreshToken"`
 	User         userResponse `json:"user"`
 }
+
+type refreshRequest struct {
+	RefreshToken string `json:"refreshToken"`
+}
+
+type refreshResponse struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+}
+
+type logoutRequest struct {
+	RefreshToken string `json:"refreshToken"`
+}
+
+type forgotPasswordRequest struct {
+	Email string `json:"email"`
+}
+
+type forgotPasswordResponse struct {
+	ResetToken string `json:"resetToken"`
+}
+
+type resetPasswordRequest struct {
+	Token       string `json:"token"`
+	NewPassword string `json:"newPassword"`
+}

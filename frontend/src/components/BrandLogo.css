@@ -1,0 +1,41 @@
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.brand-logo .brand-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.brand-logo .brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.brand-logo--light .brand-icon {
+  background: #ffffff;
+  color: #16a34a;
+}
+
+.brand-logo--light .brand-name {
+  color: #ffffff;
+}
+
+.brand-logo--dark .brand-icon {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.brand-logo--dark .brand-name {
+  color: #16a34a;
+}

@@ -11,9 +11,15 @@ import (
 
 // dependencies wires ports to their concrete adapters, once, at startup.
 type dependencies struct {
-	db           *sql.DB
-	registerUser *usecase.RegisterUser
-	loginUser    *usecase.LoginUser
+	db             *sql.DB
+	registerUser   *usecase.RegisterUser
+	loginUser      *usecase.LoginUser
+	refreshSession *usecase.RefreshSession
+	logoutUser     *usecase.LogoutUser
+	forgotPassword *usecase.ForgotPassword
+	resetPassword  *usecase.ResetPassword
+	rbacUsecases   *usecase.RBACUsecases
+	auditUsecases  *usecase.AuditUsecases
 }
 
 func buildDependencies(cfg config.Config) (*dependencies, error) {
@@ -25,15 +31,22 @@ func buildDependencies(cfg config.Config) (*dependencies, error) {
 	users := postgres.NewUserRepository(db)
 	roles := postgres.NewRoleRepository(db)
 	refreshTokens := postgres.NewRefreshTokenRepository(db)
+	resetTokens := postgres.NewPasswordResetRepository(db)
 	audit := postgres.NewAuditRepository(db)
 
 	hasher := security.NewBcryptHasher(0)
 	tokens := security.NewJWTTokenService(cfg.TokenSecret, cfg.TokenTTL)
 
 	return &dependencies{
-		db:           db,
-		registerUser: usecase.NewRegisterUser(users, roles, hasher),
-		loginUser:    usecase.NewLoginUser(users, refreshTokens, audit, hasher, tokens),
+		db:             db,
+		registerUser:   usecase.NewRegisterUser(users, roles, hasher),
+		loginUser:      usecase.NewLoginUser(users, roles, refreshTokens, audit, hasher, tokens),
+		refreshSession: usecase.NewRefreshSession(users, roles, refreshTokens, tokens),
+		logoutUser:     usecase.NewLogoutUser(refreshTokens, tokens),
+		forgotPassword: usecase.NewForgotPassword(users, resetTokens, tokens),
+		resetPassword:  usecase.NewResetPassword(users, resetTokens, hasher, tokens),
+		rbacUsecases:   usecase.NewRBACUsecases(users, roles),
+		auditUsecases:  usecase.NewAuditUsecases(audit),
 	}, nil
 }
 

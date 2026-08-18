@@ -12,10 +12,17 @@ import (
 	"iam/internal/domain"
 )
 
+// maxFailedAttempts is how many consecutive wrong passwords trigger a lock.
+const maxFailedAttempts = 5
+
+// lockoutDuration is how long an account stays locked once triggered.
+const lockoutDuration = 15 * time.Minute
+
 // LoginUser authenticates a user by email and password, issuing a token
 // pair on success and recording every attempt for audit purposes.
 type LoginUser struct {
 	users         port.UserRepository
+	roles         port.RoleRepository
 	refreshTokens port.RefreshTokenRepository
 	audit         port.AuditRepository
 	hasher        port.PasswordHasher
@@ -25,6 +32,7 @@ type LoginUser struct {
 // NewLoginUser builds the use case with its dependencies.
 func NewLoginUser(
 	users port.UserRepository,
+	roles port.RoleRepository,
 	refreshTokens port.RefreshTokenRepository,
 	audit port.AuditRepository,
 	hasher port.PasswordHasher,
@@ -32,6 +40,7 @@ func NewLoginUser(
 ) *LoginUser {
 	return &LoginUser{
 		users:         users,
+		roles:         roles,
 		refreshTokens: refreshTokens,
 		audit:         audit,
 		hasher:        hasher,
@@ -72,11 +81,25 @@ func (uc *LoginUser) Execute(ctx context.Context, input LoginUserInput) (LoginUs
 	}
 
 	if !uc.hasher.Verify(user.PasswordHash, input.Password) {
+		uc.handleFailedAttempt(ctx, user)
 		uc.recordAttempt(ctx, &user.ID, email, port.LoginOutcomeInvalidPassword)
 		return LoginUserOutput{}, domain.ErrInvalidCredentials
 	}
 
-	accessToken, err := uc.tokens.GenerateAccessToken(port.TokenClaims{UserID: user.ID, Email: user.Email})
+	if err := uc.users.ResetFailedAttempts(ctx, user.ID); err != nil {
+		return LoginUserOutput{}, err
+	}
+
+	userRoles, err := uc.roles.GetUserRoles(ctx, user.ID)
+	if err != nil {
+		return LoginUserOutput{}, err
+	}
+
+	accessToken, err := uc.tokens.GenerateAccessToken(port.TokenClaims{
+		UserID: user.ID,
+		Email:  user.Email,
+		Roles:  userRoles,
+	})
 	if err != nil {
 		return LoginUserOutput{}, err
 	}
@@ -96,6 +119,19 @@ func (uc *LoginUser) Execute(ctx context.Context, input LoginUserInput) (LoginUs
 		RefreshToken: refreshPlain,
 		User:         user,
 	}, nil
+}
+
+// handleFailedAttempt increments the counter and, once the threshold is
+// reached, locks the account for lockoutDuration. Any error here is
+// swallowed on purpose: a bookkeeping failure must not change the
+// authentication outcome the caller already decided (invalid credentials).
+func (uc *LoginUser) handleFailedAttempt(ctx context.Context, user domain.User) {
+	var lockedUntil *time.Time
+	if int(user.FailedAttempts)+1 >= maxFailedAttempts {
+		until := time.Now().Add(lockoutDuration)
+		lockedUntil = &until
+	}
+	_ = uc.users.RegisterFailedAttempt(ctx, user.ID, lockedUntil)
 }
 
 // recordAttempt swallows audit-write errors: a failed audit insert must

@@ -1,0 +1,27 @@
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# MacOS
+.DS_Store
+
+# Go
+backend/bin/
+backend/iam.exe
+backend/iam
+backend/*.exe
+
+# Node/React
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.npm/
+
+# Environment Variables
+*.env
+.env.local
+
+# Logs
+*.log

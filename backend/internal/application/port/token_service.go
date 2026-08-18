@@ -6,6 +6,7 @@ import "time"
 type TokenClaims struct {
 	UserID string
 	Email  string
+	Roles  []string
 }
 
 // GeneratedTokens is the pair returned after a successful login.
@@ -20,4 +21,5 @@ type GeneratedTokens struct {
 type TokenService interface {
 	GenerateAccessToken(claims TokenClaims) (string, error)
 	GenerateRefreshToken() (plain string, hash string, err error)
+	HashToken(plain string) string
 }

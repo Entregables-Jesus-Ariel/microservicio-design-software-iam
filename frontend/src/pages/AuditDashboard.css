@@ -1,0 +1,131 @@
+.audit-dashboard {
+  min-height: 100vh;
+  background-color: #f3f4f6;
+  font-family: 'Inter', sans-serif;
+}
+
+.audit-header {
+  background-color: #111827;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.audit-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.audit-main {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.audit-main h1 {
+  color: #111827;
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+}
+
+.audit-main .subtitle {
+  color: #4b5563;
+  margin-bottom: 2rem;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.audit-table th,
+.audit-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.audit-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.audit-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.outcome-chip {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.outcome-success {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.outcome-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.outcome-danger {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.outcome-gray {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.user-id-cell {
+  font-family: monospace;
+  color: #6b7280;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.pagination {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pagination button {
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #f3f4f6;
+}
+
+.pagination button:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-size: 0.9rem;
+  color: #4b5563;
+}

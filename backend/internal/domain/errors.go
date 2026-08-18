@@ -8,4 +8,5 @@ var (
 	ErrInvalidCredentials     = errors.New("invalid email or password")
 	ErrAccountLocked          = errors.New("account is temporarily locked")
 	ErrDefaultRoleMissing     = errors.New("default role LEARNER is not seeded")
+	ErrInvalidToken           = errors.New("invalid or expired token")
 )

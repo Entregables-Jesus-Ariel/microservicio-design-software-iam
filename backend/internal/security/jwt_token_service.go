@@ -35,6 +35,7 @@ func (s *JWTTokenService) GenerateAccessToken(claims port.TokenClaims) (string, 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub":   claims.UserID,
 		"email": claims.Email,
+		"roles": claims.Roles,
 		"iat":   now.Unix(),
 		"exp":   now.Add(s.accessTokenTTL).Unix(),
 	})
@@ -54,4 +55,10 @@ func (s *JWTTokenService) GenerateRefreshToken() (string, string, error) {
 	hash := hex.EncodeToString(sum[:])
 
 	return plain, hash, nil
+}
+
+// HashToken applies SHA-256 to a plain string to match the persisted tokens.
+func (s *JWTTokenService) HashToken(plain string) string {
+	sum := sha256.Sum256([]byte(plain))
+	return hex.EncodeToString(sum[:])
 }
